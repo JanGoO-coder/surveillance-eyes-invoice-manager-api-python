@@ -3,11 +3,24 @@ from docxtpl import DocxTemplate
 from fastapi.responses import Response, FileResponse
 from models.init import Invoice, Product
 from docx2pdf import convert
+from fastapi.middleware.cors import CORSMiddleware
 import shutil
 import os
 
 
 app = FastAPI()
+
+origins = [
+    "*",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 TEMPLATE_DIR = "download/templates/"
@@ -52,6 +65,16 @@ def generate_pdf(filename: str):
     convert(f"{DOCUMENTS_DIR}{filename}.docx", f"{PDFS_DIR}{filename}.pdf")
 
 
+def delete_document_files():
+    for file in os.listdir(DOCUMENTS_DIR):
+        os.remove(f"{DOCUMENTS_DIR}{file}")
+
+
+def delete_pdf_files():
+    for file in os.listdir(PDFS_DIR):
+        os.remove(f"{PDFS_DIR}{file}")
+
+
 @app.post("/generate/invoice/{filename}")
 async def generate_invoice_files(filename: str, invoice: Invoice):
     filename = f"invoice__[{filename}][{invoice.id}]"
@@ -89,6 +112,18 @@ def list_documents():
 @app.get("/list/pdfs")
 def list_pdfs():
     return os.listdir(PDFS_DIR)
+
+
+@app.get("/delete/documents")
+def delete_documents():
+    delete_document_files()
+    return {"message": "All documents deleted successfully"}
+
+
+@app.get("/delete/pdfs")
+def delete_pdfs():
+    delete_pdf_files()
+    return {"message": "All pdfs deleted successfully"}
 
 
 @app.get("/")
