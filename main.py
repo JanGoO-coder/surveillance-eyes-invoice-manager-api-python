@@ -29,6 +29,13 @@ PDFS_DIR = "download/pdfs/"
 DOCX_MIMETYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 
 
+if not os.path.exists(DOCUMENTS_DIR):
+    os.makedirs(DOCUMENTS_DIR)
+
+if not os.path.exists(PDFS_DIR):
+    os.makedirs(PDFS_DIR)
+
+
 def convert_products_to_context(products: list[Product]):
     context = []
     for i, product in enumerate(products):
