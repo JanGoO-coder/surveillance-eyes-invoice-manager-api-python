@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from docxtpl import DocxTemplate
 from fastapi.responses import Response, FileResponse
 from models.init import Invoice, Product
-from docx2pdf import convert
+# from docx2pdf import convert
 from fastapi.middleware.cors import CORSMiddleware
 import shutil
 import os
@@ -68,8 +68,8 @@ def generate_docx(filename: str, invoice: Invoice):
     doc.save(f"{DOCUMENTS_DIR}{filename}")
 
 
-def generate_pdf(filename: str):
-    convert(f"{DOCUMENTS_DIR}{filename}.docx", f"{PDFS_DIR}{filename}.pdf")
+# def generate_pdf(filename: str):
+#     convert(f"{DOCUMENTS_DIR}{filename}.docx", f"{PDFS_DIR}{filename}.pdf")
 
 
 def delete_document_files():
@@ -77,16 +77,16 @@ def delete_document_files():
         os.remove(f"{DOCUMENTS_DIR}{file}")
 
 
-def delete_pdf_files():
-    for file in os.listdir(PDFS_DIR):
-        os.remove(f"{PDFS_DIR}{file}")
+# def delete_pdf_files():
+#     for file in os.listdir(PDFS_DIR):
+#         os.remove(f"{PDFS_DIR}{file}")
 
 
 @app.post("/generate/invoice/{filename}")
 async def generate_invoice_files(filename: str, invoice: Invoice):
     filename = f"invoice__[{filename}][{invoice.id}]"
     generate_docx(filename + ".docx", invoice)
-    generate_pdf(filename)
+    # generate_pdf(filename)
 
     return {
         "message": "Invoice generated successfully",
@@ -103,12 +103,12 @@ async def download_docx(response: Response, filename: str):
     return FileResponse(f"{DOCUMENTS_DIR}{filename}", media_type=DOCX_MIMETYPE, filename=filename)
 
 
-@app.get("/download/pdfs/{filename}")
-async def download_pdf(response: Response, filename: str):
-    response.headers["Content-Disposition"] = f"attachment; filename={filename}"
-    response.headers["Content-Type"] = "application/pdf"
+# @app.get("/download/pdfs/{filename}")
+# async def download_pdf(response: Response, filename: str):
+#     response.headers["Content-Disposition"] = f"attachment; filename={filename}"
+#     response.headers["Content-Type"] = "application/pdf"
 
-    return FileResponse(f"{PDFS_DIR}{filename}", media_type="application/pdf", filename=filename)
+#     return FileResponse(f"{PDFS_DIR}{filename}", media_type="application/pdf", filename=filename)
 
 
 @app.get("/list/documents")
@@ -116,9 +116,9 @@ def list_documents():
     return os.listdir(DOCUMENTS_DIR)
 
 
-@app.get("/list/pdfs")
-def list_pdfs():
-    return os.listdir(PDFS_DIR)
+# @app.get("/list/pdfs")
+# def list_pdfs():
+#     return os.listdir(PDFS_DIR)
 
 
 @app.get("/delete/documents")
@@ -127,10 +127,10 @@ def delete_documents():
     return {"message": "All documents deleted successfully"}
 
 
-@app.get("/delete/pdfs")
-def delete_pdfs():
-    delete_pdf_files()
-    return {"message": "All pdfs deleted successfully"}
+# @app.get("/delete/pdfs")
+# def delete_pdfs():
+#     delete_pdf_files()
+#     return {"message": "All pdfs deleted successfully"}
 
 
 @app.get("/")
