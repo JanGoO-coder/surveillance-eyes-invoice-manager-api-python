@@ -90,8 +90,8 @@ async def generate_invoice_files(filename: str, invoice: Invoice):
 
     return {
         "message": "Invoice generated successfully",
-        "docx": f"http://localhost:8000/download/documents/{filename}.docx",
-        "pdf": f"http://localhost:8000/download/pdfs/{filename}.pdf",
+        "docx": f"/download/documents/{filename}.docx",
+        "pdf": f"/download/pdfs/{filename}.pdf",
     }
 
 
