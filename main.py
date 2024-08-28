@@ -2,10 +2,10 @@ from fastapi import FastAPI
 from docxtpl import DocxTemplate
 from fastapi.responses import Response, FileResponse
 from models.init import Invoice, Product
-# from docx2pdf import convert
 from fastapi.middleware.cors import CORSMiddleware
 import shutil
 import os
+import subprocess
 
 
 app = FastAPI()
@@ -49,8 +49,8 @@ def convert_products_to_context(products: list[Product]):
     return context
 
 
-def generate_docx(filename: str, invoice: Invoice):
-    shutil.copy2(f"{TEMPLATE_DIR}invoice_template.docx", f"{DOCUMENTS_DIR}{filename}")
+def generate_docx(filename: str, invoice: Invoice, template: str = "surveillance_eyes_invoice_template.docx"):
+    shutil.copy2(f"{TEMPLATE_DIR}{template}", f"{DOCUMENTS_DIR}{filename}")
 
     doc = DocxTemplate(f"{DOCUMENTS_DIR}{filename}")
 
@@ -68,8 +68,27 @@ def generate_docx(filename: str, invoice: Invoice):
     doc.save(f"{DOCUMENTS_DIR}{filename}")
 
 
-# def generate_pdf(filename: str):
-#     convert(f"{DOCUMENTS_DIR}{filename}.docx", f"{PDFS_DIR}{filename}.pdf")
+def convert_file_to_pdf(docx_file_path, output_dir, pdf_filename):
+    subprocess.run(
+        f'libreoffice \
+        --headless \
+        --convert-to pdf \
+        --outdir {output_dir} {docx_file_path}', shell=True)
+    
+    pdf_file_path = f'{output_dir}{pdf_filename}'
+    
+    if os.path.exists(pdf_file_path):
+        return pdf_file_path
+    else:
+        return None
+    
+
+def generate_pdf(filename: str):
+    file = convert_file_to_pdf(f"{DOCUMENTS_DIR}{filename}.docx", f"{PDFS_DIR}", f"{filename}.pdf")
+    if file:
+        print(f'File converted to {file}.')
+    else:
+        print('Unable to convert the file.')
 
 
 def delete_document_files():
@@ -77,16 +96,16 @@ def delete_document_files():
         os.remove(f"{DOCUMENTS_DIR}{file}")
 
 
-# def delete_pdf_files():
-#     for file in os.listdir(PDFS_DIR):
-#         os.remove(f"{PDFS_DIR}{file}")
+def delete_pdf_files():
+    for file in os.listdir(PDFS_DIR):
+        os.remove(f"{PDFS_DIR}{file}")
 
 
 @app.post("/generate/invoice/{filename}")
-async def generate_invoice_files(filename: str, invoice: Invoice):
+async def generate_invoice_files(filename: str, invoice: Invoice, template: str = "surveillance_eyes_invoice_template.docx"):
     filename = f"invoice__[{filename}][{invoice.id}]"
-    generate_docx(filename + ".docx", invoice)
-    # generate_pdf(filename)
+    generate_docx(filename + ".docx", invoice, template)
+    generate_pdf(filename)
 
     return {
         "message": "Invoice generated successfully",
@@ -103,12 +122,12 @@ async def download_docx(response: Response, filename: str):
     return FileResponse(f"{DOCUMENTS_DIR}{filename}", media_type=DOCX_MIMETYPE, filename=filename)
 
 
-# @app.get("/download/pdfs/{filename}")
-# async def download_pdf(response: Response, filename: str):
-#     response.headers["Content-Disposition"] = f"attachment; filename={filename}"
-#     response.headers["Content-Type"] = "application/pdf"
+@app.get("/download/pdfs/{filename}")
+async def download_pdf(response: Response, filename: str):
+    response.headers["Content-Disposition"] = f"attachment; filename={filename}"
+    response.headers["Content-Type"] = "application/pdf"
 
-#     return FileResponse(f"{PDFS_DIR}{filename}", media_type="application/pdf", filename=filename)
+    return FileResponse(f"{PDFS_DIR}{filename}", media_type="application/pdf", filename=filename)
 
 
 @app.get("/list/documents")
@@ -116,9 +135,14 @@ def list_documents():
     return os.listdir(DOCUMENTS_DIR)
 
 
-# @app.get("/list/pdfs")
-# def list_pdfs():
-#     return os.listdir(PDFS_DIR)
+@app.get("/list/pdfs")
+def list_pdfs():
+    return os.listdir(PDFS_DIR)
+
+
+@app.get("/list/templates")
+def list_templates():
+    return os.listdir(TEMPLATE_DIR)
 
 
 @app.get("/delete/documents")
@@ -127,10 +151,10 @@ def delete_documents():
     return {"message": "All documents deleted successfully"}
 
 
-# @app.get("/delete/pdfs")
-# def delete_pdfs():
-#     delete_pdf_files()
-#     return {"message": "All pdfs deleted successfully"}
+@app.get("/delete/pdfs")
+def delete_pdfs():
+    delete_pdf_files()
+    return {"message": "All pdfs deleted successfully"}
 
 
 @app.get("/")
