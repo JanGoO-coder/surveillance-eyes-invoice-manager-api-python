@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import List
 
 
 class Product(BaseModel):
@@ -15,7 +16,7 @@ class Invoice(BaseModel):
     description: str
     address: str
     total: float
-    products: list[Product]
+    products: List[Product]
 
 
 class InvoiceRequest(BaseModel):

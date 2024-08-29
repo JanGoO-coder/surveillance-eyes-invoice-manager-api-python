@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import shutil
 import os
 import subprocess
+from typing import List
 
 
 app = FastAPI()
@@ -36,7 +37,7 @@ if not os.path.exists(PDFS_DIR):
     os.makedirs(PDFS_DIR)
 
 
-def convert_products_to_context(products: list[Product]):
+def convert_products_to_context(products: List[Product]):
     context = []
     for i, product in enumerate(products):
         context.append({
