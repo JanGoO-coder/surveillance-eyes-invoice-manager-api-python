@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from docxtpl import DocxTemplate
 from fastapi.responses import Response, FileResponse
-from models.init import Invoice, Product
+from models.init import Invoice, Product, InvoiceRequest
 from fastapi.middleware.cors import CORSMiddleware
 import shutil
 import os
@@ -102,9 +102,12 @@ def delete_pdf_files():
 
 
 @app.post("/generate/invoice/{filename}")
-async def generate_invoice_files(filename: str, invoice: Invoice, template: str = "surveillance_eyes_invoice_template.docx"):
-    filename = f"invoice__[{filename}][{invoice.id}]"
-    generate_docx(filename + ".docx", invoice, template)
+async def generate_invoice_files(filename: str, invoiceRequest: InvoiceRequest):
+    delete_document_files()
+    delete_pdf_files()
+
+    filename = f"invoice__[{filename}][{invoiceRequest.invoice.id}]"
+    generate_docx(filename + ".docx", invoiceRequest.invoice, invoiceRequest.template)
     generate_pdf(filename)
 
     return {

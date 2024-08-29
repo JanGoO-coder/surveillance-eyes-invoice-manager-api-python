@@ -17,3 +17,8 @@ class Invoice(BaseModel):
     total: float
     products: list[Product]
 
+
+class InvoiceRequest(BaseModel):
+    invoice: Invoice
+    template: str
+
