@@ -1,0 +1,42 @@
+## Example Nginx config for dockerized Nginx container reverse proxying the invoice API
+## Place this file on the host and mount into the Nginx container, e.g.:
+##   -v $(pwd)/nginx-invoice.conf.example:/etc/nginx/conf.d/invoice.conf:ro
+## Ensure both nginx container and invoice-api container share a user-defined network (e.g. 'web'):
+##   docker network create web
+##   docker network connect web nginx
+##   docker network connect web invoice-api   (deploy script already attaches invoice-api)
+
+server {
+    listen 80;
+    server_name invoice.jangoo.org;
+
+    # Redirect HTTP to HTTPS if certificates are configured separately
+    # return 301 https://$host$request_uri;
+
+    location / {
+        proxy_pass http://invoice-api:8105/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 300;
+    }
+}
+
+# HTTPS server block example (uncomment and adjust cert paths once certs issued)
+# server {
+#     listen 443 ssl http2;
+#     server_name invoice.jangoo.org;
+#     ssl_certificate /etc/letsencrypt/live/invoice.jangoo.org/fullchain.pem;
+#     ssl_certificate_key /etc/letsencrypt/live/invoice.jangoo.org/privkey.pem;
+#     add_header Strict-Transport-Security "max-age=31536000" always;
+#
+#     location / {
+#         proxy_pass http://invoice-api:8105/;
+#         proxy_set_header Host $host;
+#         proxy_set_header X-Real-IP $remote_addr;
+#         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#         proxy_set_header X-Forwarded-Proto $scheme;
+#         proxy_read_timeout 300;
+#     }
+# }

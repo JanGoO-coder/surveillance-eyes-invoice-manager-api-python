@@ -10,9 +10,13 @@ import os
 
 app = FastAPI()
 
-origins = [
-    "*",
-]
+# Dynamic CORS origins via environment variable ALLOWED_ORIGINS (comma-separated)
+# Defaults to * if not provided.
+origins_env = os.getenv("ALLOWED_ORIGINS", "").strip()
+if origins_env:
+    origins = [o.strip() for o in origins_env.split(",") if o.strip()]
+else:
+    origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
