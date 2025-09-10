@@ -6,7 +6,7 @@ colorama==0.4.6
 docx2pdf==0.1.8
 docxcompose==1.4.0
 docxtpl==0.16.8
-fastapi==0.110.2
+fastapi[standard]
 h11==0.14.0
 httptools==0.6.1
 idna==3.7
