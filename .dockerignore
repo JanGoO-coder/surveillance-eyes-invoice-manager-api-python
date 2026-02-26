@@ -1,0 +1,28 @@
+# Version control
+.git
+.gitignore
+
+# Python cache
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pycache
+
+# Generated output — these are created at runtime inside the container
+download/documents/
+download/pdfs/
+
+# Environment — never bake secrets into the image
+.env
+
+# Editor / OS artefacts
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
+
+# Documentation (not needed inside image)
+README.md
+*.md

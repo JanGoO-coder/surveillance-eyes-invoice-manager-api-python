@@ -1,0 +1,16 @@
+services:
+  api:
+    build: .
+    container_name: invoice-api
+    restart: unless-stopped
+    ports:
+      # Both sides use ${PORT} so the internal uvicorn port matches
+      # the host port that Nginx proxies to. Default: 8105
+      - "${PORT:-8105}:${PORT:-8105}"
+    volumes:
+      # Persist generated documents and PDFs across container restarts / rebuilds
+      - ./download:/app/download
+    env_file:
+      - .env
+    environment:
+      HOME: /tmp

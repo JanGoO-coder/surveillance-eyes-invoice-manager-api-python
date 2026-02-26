@@ -70,19 +70,31 @@ def generate_docx(filename: str, invoice: Invoice, template: str = "surveillance
 
 
 def convert_file_to_pdf(docx_file_path, output_dir, pdf_filename):
+    # Use list-form args (avoids shell injection) and set HOME=/tmp so LibreOffice
+    # can write its user-profile / lock files when running inside a Docker container.
+    env = os.environ.copy()
+    env["HOME"] = "/tmp"
+
     subprocess.run(
-        f'libreoffice \
-        --headless \
-        --convert-to pdf \
-        --outdir {output_dir} {docx_file_path}', shell=True)
-    
-    pdf_file_path = f'{output_dir}{pdf_filename}'
-    
+        [
+            "soffice",
+            "--headless",
+            "--norestore",
+            "--convert-to", "pdf",
+            "--outdir", output_dir,
+            docx_file_path,
+        ],
+        env=env,
+        check=False,
+    )
+
+    pdf_file_path = f"{output_dir}{pdf_filename}"
+
     if os.path.exists(pdf_file_path):
         return pdf_file_path
     else:
         return None
-    
+
 
 def generate_pdf(filename: str):
     file = convert_file_to_pdf(f"{DOCUMENTS_DIR}{filename}.docx", f"{PDFS_DIR}", f"{filename}.pdf")
@@ -168,4 +180,3 @@ def read_root():
         "documentation_t1": "http:://localhost:8000/docs",
         "documentation_t2": "http:://localhost:8000/redoc",
     }
-
